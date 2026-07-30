@@ -1,0 +1,13 @@
+{
+  "name": "togibox-pipeline",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "process": "node processor.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "pg": "^8.12.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schedule": "0 */1 * * *",
+  "apiUrl": "http://localhost:8001",
+  "batchSize": 100,
+  "countyId": "raleigh_nc",
+  "contractAddress": "0x0000000000000000000000000000000000000000",
+  "giwaRpc": "https://sepolia-rpc.giwa.io/",
+  "giwaChainId": 91342,
+  "consensusThreshold": 0.67
+}

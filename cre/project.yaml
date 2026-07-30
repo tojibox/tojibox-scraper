@@ -1,0 +1,20 @@
+# CRE PROJECT SETTINGS FILE
+# Togibox Oracle — GIWA GASOK accelerator (DeFi/RWA track)
+#
+# NOTE: this CRE workflow is optional/future scaffolding, not the primary path.
+# See workflow.ts header comment — the primary, tested way to commit batches
+# is running pipeline/processor.mjs directly.
+
+staging-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+    - chain-name: giwa-sepolia
+      url: https://sepolia-rpc.giwa.io/
+
+production-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+    - chain-name: giwa-sepolia
+      url: https://sepolia-rpc.giwa.io/
