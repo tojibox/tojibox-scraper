@@ -106,6 +106,20 @@ done
 
 (`DATABASE_URL` — build from `DB_HOST/PORT/USER/PASSWORD/NAME` in `.env`, or use the Supabase dashboard's connection string.)
 
+**If you're pointing at a fresh, empty Postgres project**, run all of `001`–`009` in order.
+
+**If you're reusing an existing project that already has this schema** (e.g.
+the same Supabase project as a prior Hedera-based version of this project) —
+`001`–`008` are `CREATE TABLE` statements that will fail with "relation
+already exists" against a DB that already has them. Only run `009_add_giwa_columns.sql`,
+which is purely additive (new nullable columns + indexes, `IF NOT EXISTS`
+throughout) and safe to layer on top without touching or renaming anything
+the existing schema/pipeline already relies on:
+
+```bash
+psql "$DATABASE_URL" -f migrations/009_add_giwa_columns.sql
+```
+
 ## Compiling and deploying the contract
 
 ```bash

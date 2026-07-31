@@ -113,6 +113,14 @@ function getMerkleProof(tree, leafIndex) {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 
+// Set once step 4 inserts this run's merkle_batches row — read by the
+// failure handler below so cleanup only ever touches the row THIS run
+// created. merkle_batches is shared with a separate Hedera-based
+// pipeline that may have its own row genuinely sitting at status='pending'
+// at the same moment; an unscoped "WHERE status = 'pending'" cleanup would
+// wrongly fail that pipeline's in-flight batch too.
+let currentBatchUUID = null;
+
 async function run() {
   console.log('╔══════════════════════════════════════════╗');
   console.log('║   Togibox Oracle — Batch Processor       ║');
@@ -195,6 +203,7 @@ async function run() {
 
   console.log('\n[4/6] Creating DB batch record (status=pending)...');
   const batchUUID = crypto.randomUUID();
+  currentBatchUUID = batchUUID;
   await pool.query(
     `INSERT INTO merkle_batches
        (batch_id, merkle_root, tree_depth, leaf_count, changes_count, status)
@@ -268,16 +277,25 @@ async function run() {
     [tx.hash, receipt.blockNumber, onChainBatchId.toString(), batchUUID]
   );
 
-  // Bulk-update change_events with committed_at, batch_id, snapshot_index, leaf_hash
+  // Bulk-update change_events with giwa_committed_at / giwa_batch_id /
+  // giwa_evm_snapshot_index — GIWA-specific columns (see migrations/
+  // 009_add_giwa_columns.sql), not the plain committed_at/batch_id/
+  // evm_snapshot_index columns. This DB is shared with a separate
+  // Hedera-based pipeline that already tracks its own commit status on
+  // those columns for the same rows; writing there instead would mark
+  // events "committed" from that pipeline's perspective too and hide
+  // them from its own pending-events query. merkle_leaf_hash is safe to
+  // share since it's a pure function of the event fields — identical
+  // value no matter which pipeline computes it.
   const eventIds   = events.map(e => e.id);
   const leafHashes = leaves;
 
   await pool.query(
     `UPDATE change_events AS ce
-     SET committed_at       = NOW(),
-         batch_id           = $2::uuid,
-         evm_snapshot_index = $3::bigint,
-         merkle_leaf_hash   = v.leaf_hash
+     SET giwa_committed_at      = NOW(),
+         giwa_batch_id           = $2::uuid,
+         giwa_evm_snapshot_index = $3::bigint,
+         merkle_leaf_hash        = v.leaf_hash
      FROM (
        SELECT unnest($1::uuid[]) AS event_id,
               unnest($4::text[]) AS leaf_hash
@@ -309,14 +327,18 @@ async function run() {
 
 run().catch(async err => {
   console.error('\n❌ Processor failed:', err.message || err);
-  // Mark any in-progress 'pending' batch as 'failed' so it doesn't block future runs
-  try {
-    await pool.query(
-      `UPDATE merkle_batches SET status = 'failed', error_message = $1
-       WHERE status = 'pending' AND committed_at IS NULL`,
-      [err.message?.slice(0, 500) || 'unknown error']
-    );
-  } catch { /* ignore cleanup failure */ }
+  // Mark THIS run's batch row as 'failed', scoped by batch_id — not a bare
+  // "WHERE status = 'pending'", which would also catch a concurrently
+  // in-flight batch from the separate Hedera pipeline sharing this table.
+  if (currentBatchUUID) {
+    try {
+      await pool.query(
+        `UPDATE merkle_batches SET status = 'failed', error_message = $1
+         WHERE batch_id = $2 AND status = 'pending'`,
+        [err.message?.slice(0, 500) || 'unknown error', currentBatchUUID]
+      );
+    } catch { /* ignore cleanup failure */ }
+  }
   await pool.end().catch(() => {});
   process.exit(1);
 });
