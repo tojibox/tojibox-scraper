@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /**
- * TogiboxOracle
+ * TojiboxOracle
  * -------------
  * On-chain receipt book for rezoning change events in Wake County / Raleigh NC.
  *
@@ -24,7 +24,7 @@ pragma solidity ^0.8.20;
  *   Only the authorised oracle address (set to the pipeline/CRE workflow EOA)
  *   can call commitBatch(). Owner can rotate the oracle address.
  */
-contract TogiboxOracle {
+contract TojiboxOracle {
 
     // ── Data structures ────────────────────────────────────────────────────────
 
@@ -78,13 +78,13 @@ contract TogiboxOracle {
     modifier onlyOracle() {
         require(
             msg.sender == oracle || msg.sender == owner,
-            "TogiboxOracle: caller is not the oracle"
+            "TojiboxOracle: caller is not the oracle"
         );
         _;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "TogiboxOracle: caller is not the owner");
+        require(msg.sender == owner, "TojiboxOracle: caller is not the owner");
         _;
     }
 
@@ -114,11 +114,11 @@ contract TogiboxOracle {
         bytes32[] calldata pinHashes,
         string[]  calldata petitionNumbers
     ) external onlyOracle returns (uint256 batchId) {
-        require(leafCount > 0,              "TogiboxOracle: empty batch");
-        require(merkleRoot != bytes32(0),   "TogiboxOracle: zero merkle root");
+        require(leafCount > 0,              "TojiboxOracle: empty batch");
+        require(merkleRoot != bytes32(0),   "TojiboxOracle: zero merkle root");
         require(
             pinHashes.length == petitionNumbers.length,
-            "TogiboxOracle: array length mismatch"
+            "TojiboxOracle: array length mismatch"
         );
 
         batchId = batchCount;
@@ -208,7 +208,7 @@ contract TogiboxOracle {
         bytes32[] calldata proof,
         uint256          batchId
     ) external view returns (bool) {
-        require(batchId < batchCount, "TogiboxOracle: batch does not exist");
+        require(batchId < batchCount, "TojiboxOracle: batch does not exist");
         return _verifyProof(proof, batches[batchId].merkleRoot, leaf);
     }
 
@@ -224,7 +224,7 @@ contract TogiboxOracle {
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
-        require(newOwner != address(0), "TogiboxOracle: zero address");
+        require(newOwner != address(0), "TojiboxOracle: zero address");
         owner = newOwner;
     }
 

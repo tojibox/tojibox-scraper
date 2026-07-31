@@ -1,5 +1,5 @@
 """
-Togibox scraper configuration.
+Tojibox scraper configuration.
 All values come from environment variables; hardcoded defaults are safe for local dev only.
 """
 import os

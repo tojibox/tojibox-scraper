@@ -2,10 +2,10 @@
  * pipeline/processor.mjs
  *
  * Reads pending rezoning change events from the oracle API,
- * builds a Merkle tree, calls TogiboxOracle.commitBatch() on GIWA (OP-Stack EVM L2),
+ * builds a Merkle tree, calls TojiboxOracle.commitBatch() on GIWA (OP-Stack EVM L2),
  * then marks the events as committed in Postgres.
  *
- * This is the canonical batch committer for Togibox — run it directly (cron or
+ * This is the canonical batch committer for Tojibox — run it directly (cron or
  * manual). See ../cre/workflow.ts for an optional/future Chainlink CRE DON-consensus
  * variant that is not the primary/tested path.
  *
@@ -13,7 +13,7 @@
  *   cd pipeline && npm install && npm run process
  *
  * Required env vars (../.env):
- *   TOGIBOX_ORACLE_ADDRESS, GIWA_PRIVATE_KEY,
+ *   TOJIBOX_ORACLE_ADDRESS, GIWA_PRIVATE_KEY,
  *   DB_HOST/PORT/USER/PASSWORD/NAME, API_PORT
  */
 
@@ -32,7 +32,7 @@ dotenv.config({ path: join(__dirname, '../.env') });
 // ── Config ─────────────────────────────────────────────────────────────────────
 
 const API_BASE      = `http://localhost:${process.env.API_PORT || 8001}`;
-const CONTRACT_ADDR = process.env.TOGIBOX_ORACLE_ADDRESS;
+const CONTRACT_ADDR = process.env.TOJIBOX_ORACLE_ADDRESS;
 const PRIV_KEY      = process.env.GIWA_PRIVATE_KEY;
 const RPC_URL       = process.env.GIWA_RPC_URL || 'https://sepolia-rpc.giwa.io/';
 const COUNTY_ID     = 'raleigh_nc';
@@ -46,7 +46,7 @@ const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '100');
 
 const artifact = JSON.parse(
   readFileSync(
-    join(__dirname, '../contracts/artifacts/src/TogiboxOracle.sol/TogiboxOracle.json'),
+    join(__dirname, '../contracts/artifacts/src/TojiboxOracle.sol/TojiboxOracle.json'),
     'utf8'
   )
 );
@@ -69,7 +69,7 @@ const pool = new Pool({
 
 /**
  * Build a binary Merkle tree from bytes32 hex leaf values.
- * Internal nodes are keccak256(sorted(left, right)) — matches TogiboxOracle._verifyProof.
+ * Internal nodes are keccak256(sorted(left, right)) — matches TojiboxOracle._verifyProof.
  * Returns { root: bytes32, tree: levels[] } where tree[0] = leaves.
  */
 function buildMerkleTree(leaves) {
@@ -123,13 +123,13 @@ let currentBatchUUID = null;
 
 async function run() {
   console.log('╔══════════════════════════════════════════╗');
-  console.log('║   Togibox Oracle — Batch Processor       ║');
+  console.log('║   Tojibox Oracle — Batch Processor       ║');
   console.log('╚══════════════════════════════════════════╝');
   console.log(`Contract : ${CONTRACT_ADDR}`);
   console.log(`API      : ${API_BASE}`);
   console.log(`Network  : GIWA Sepolia (chain 91342)`);
 
-  if (!CONTRACT_ADDR) throw new Error('TOGIBOX_ORACLE_ADDRESS not set in ../.env');
+  if (!CONTRACT_ADDR) throw new Error('TOJIBOX_ORACLE_ADDRESS not set in ../.env');
   if (!PRIV_KEY)      throw new Error('GIWA_PRIVATE_KEY not set in ../.env');
 
   // ── 1. Fetch pending events ────────────────────────────────────────────────
@@ -319,7 +319,7 @@ async function run() {
   console.log(`  Block      : ${receipt.blockNumber}`);
   console.log('');
   console.log('  Anyone can verify an event with:');
-  console.log(`  TogiboxOracle.verify(leafHash, proof, ${onChainBatchId.toString()})`);
+  console.log(`  TojiboxOracle.verify(leafHash, proof, ${onChainBatchId.toString()})`);
   console.log(`  Contract: ${CONTRACT_ADDR}`);
 
   await pool.end();

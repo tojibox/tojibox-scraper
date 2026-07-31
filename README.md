@@ -1,6 +1,6 @@
-# togibox-scraper
+# tojibox-scraper
 
-Data pipeline and on-chain oracle for [Togibox](https://github.com/togibox) — a port of ZoneProof to **GIWA** (OP-Stack EVM L2, testnet "GIWA Sepolia", chain ID 91342). Scrapes Wake County / Raleigh NC parcel and rezoning-petition data, detects changes, and commits Merkle-batched change events to `TogiboxOracle.sol` on GIWA.
+Data pipeline and on-chain oracle for [Tojibox](https://github.com/tojibox) — a port of ZoneProof to **GIWA** (OP-Stack EVM L2, testnet "GIWA Sepolia", chain ID 91342). Scrapes Wake County / Raleigh NC parcel and rezoning-petition data, detects changes, and commits Merkle-batched change events to `TojiboxOracle.sol` on GIWA.
 
 ## What it does
 
@@ -9,8 +9,8 @@ Data pipeline and on-chain oracle for [Togibox](https://github.com/togibox) — 
 - **Petition scraping** — 4-hourly HTML scrape of Raleigh Planning's active + finalized rezoning case pages (data ArcGIS doesn't have: status, address, PDF links)
 - **Spatial enrichment** — one-time/periodic job that intersects petition polygons against parcel geometries to populate `rezoning_petitions.pins[]`
 - **Change detection** — SHA-256 fingerprints per record; only changed records get written to `change_events`
-- **Merkle-commit pipeline** — reads pending `change_events`, builds a Merkle tree, calls `TogiboxOracle.commitBatch()` on GIWA, marks events committed in Postgres
-- **On-chain oracle contract** — `TogiboxOracle.sol`: stores Merkle roots per batch, indexes affected parcel PINs, exposes `verify(leaf, proof, batchId)` for anyone to cryptographically confirm a change event is real
+- **Merkle-commit pipeline** — reads pending `change_events`, builds a Merkle tree, calls `TojiboxOracle.commitBatch()` on GIWA, marks events committed in Postgres
+- **On-chain oracle contract** — `TojiboxOracle.sol`: stores Merkle roots per batch, indexes affected parcel PINs, exposes `verify(leaf, proof, batchId)` for anyone to cryptographically confirm a change event is real
 
 ## Tech stack
 
@@ -21,12 +21,12 @@ Data pipeline and on-chain oracle for [Togibox](https://github.com/togibox) — 
 - **Loguru** — structured logging
 - **Node.js / ethers.js** — Merkle tree construction + on-chain commit (`pipeline/processor.mjs`)
 - **Hardhat** — Solidity compilation + deployment to GIWA Sepolia
-- **Solidity 0.8.20** — `TogiboxOracle.sol`
+- **Solidity 0.8.20** — `TojiboxOracle.sol`
 
 ## Folder structure
 
 ```
-togibox-scraper/
+tojibox-scraper/
 ├── main.py                  # FastAPI wrapper — /health + manual /run/* trigger endpoints
 ├── config.py                 # Settings loaded from .env
 ├── requirements.txt           # Python dependencies
@@ -53,7 +53,7 @@ togibox-scraper/
 │   └── 008_oracle_runs.sql
 │
 ├── contracts/
-│   ├── src/TogiboxOracle.sol    # Batch-commit + Merkle-proof verification contract
+│   ├── src/TojiboxOracle.sol    # Batch-commit + Merkle-proof verification contract
 │   ├── hardhat.config.js        # giwaSepolia network (chain 91342)
 │   ├── package.json
 │   └── scripts/deploy.js        # `npx hardhat run scripts/deploy.js --network giwaSepolia`
@@ -128,7 +128,7 @@ npm install
 npm run compile
 # Requires GIWA_PRIVATE_KEY (funded GIWA Sepolia testnet key) and ORACLE_ADDRESS in ../.env
 npm run deploy:testnet
-# Copy the printed contract address into ../.env as TOGIBOX_ORACLE_ADDRESS
+# Copy the printed contract address into ../.env as TOJIBOX_ORACLE_ADDRESS
 ```
 
 ## Running the commit pipeline
@@ -139,7 +139,7 @@ npm install
 npm run process
 ```
 
-Reads pending `change_events` from the oracle API (`GET /api/oracle/pending-events` — served by the sibling `togibox-api` repo), builds a Merkle tree, submits `commitBatch()` to `TogiboxOracle.sol` on GIWA, and marks the events committed in Postgres.
+Reads pending `change_events` from the oracle API (`GET /api/oracle/pending-events` — served by the sibling `tojibox-api` repo), builds a Merkle tree, submits `commitBatch()` to `TojiboxOracle.sol` on GIWA, and marks the events committed in Postgres.
 
 ## Environment variables
 
@@ -153,7 +153,7 @@ Reads pending `change_events` from the oracle API (`GET /api/oracle/pending-even
 | `GIWA_RPC_URL` | GIWA Sepolia RPC endpoint, default `https://sepolia-rpc.giwa.io/` |
 | `GIWA_PRIVATE_KEY` | Deployer / pipeline signer private key (hex) — **never commit a real value** |
 | `ORACLE_ADDRESS` | EOA authorized to call `commitBatch()` (deploy-time constructor arg) |
-| `TOGIBOX_ORACLE_ADDRESS` | Deployed `TogiboxOracle.sol` address — filled in after deploy |
+| `TOJIBOX_ORACLE_ADDRESS` | Deployed `TojiboxOracle.sol` address — filled in after deploy |
 | `BATCH_SIZE` | Max change events per pipeline commit batch, default 100 |
 | `API_PORT` | Port for `main.py` FastAPI app, default 8001 |
 | `REZONING_CRON_SCHEDULE` / `PARCEL_CRON_SCHEDULE` / `PETITION_CRON_SCHEDULE` | Crontab expressions for `scrapers/scheduler.py` |
@@ -163,4 +163,4 @@ Reads pending `change_events` from the oracle API (`GET /api/oracle/pending-even
 
 - No migration runner script (`migrations/runner.py`-style) — apply `migrations/*.sql` manually in order for now.
 - The CRE workflow (`cre/workflow.ts`) POSTs to `${apiUrl}/api/oracle/commit-root`, which is not implemented in any sibling repo yet. It's optional/future scaffolding — the tested path is `pipeline/processor.mjs`.
-- `contracts/`, `pipeline/`, and `cre/` all depend on `TogiboxOracle.sol`'s compiled artifact (`contracts/artifacts/src/TogiboxOracle.sol/TogiboxOracle.json`) — run `npm run compile` in `contracts/` before running `pipeline/processor.mjs`.
+- `contracts/`, `pipeline/`, and `cre/` all depend on `TojiboxOracle.sol`'s compiled artifact (`contracts/artifacts/src/TojiboxOracle.sol/TojiboxOracle.json`) — run `npm run compile` in `contracts/` before running `pipeline/processor.mjs`.

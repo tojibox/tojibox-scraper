@@ -2,7 +2,7 @@
  * cre/workflow.ts
  *
  * Optional/future Chainlink CRE (Runtime Environment) workflow for the
- * Togibox Oracle — DON-consensus variant of the batch committer.
+ * Tojibox Oracle — DON-consensus variant of the batch committer.
  *
  * ── STATUS: NOT the primary path ────────────────────────────────────────────
  * The primary, tested way to commit batches is running `pipeline/processor.mjs`
@@ -14,9 +14,9 @@
  * Known wiring gap (carried over from the original ZoneProof/Hedera version,
  * not yet fixed): this workflow POSTs the agreed root to
  * `${apiUrl}/api/oracle/commit-root`. That endpoint does not exist in any
- * sibling repo yet — `togibox-api` (a separate repo, not this one) would need
+ * sibling repo yet — `tojibox-api` (a separate repo, not this one) would need
  * to implement it (accept {merkleRoot, leafCount, contractAddress, countyId},
- * hold the GIWA signer, and call TogiboxOracle.commitBatch()) before this
+ * hold the GIWA signer, and call TojiboxOracle.commitBatch()) before this
  * workflow path can run end-to-end. Until then, use pipeline/processor.mjs.
  *
  * What this does (once the endpoint above exists):
@@ -26,7 +26,7 @@
  *   3. BFT consensus: nodes compare their Merkle roots. If 2/3+ match, the
  *      root is accepted. A single divergent node (tampered data / bad API)
  *      cannot affect the outcome.
- *   4. The agreed root is submitted to TogiboxOracle.sol on GIWA via
+ *   4. The agreed root is submitted to TojiboxOracle.sol on GIWA via
  *      a bridge call to the oracle API's commit-root endpoint.
  *
  * Deploy to CRE:
@@ -56,7 +56,7 @@ type Config = {
   apiUrl:             string   // oracle API base, e.g. "http://oracle-api:8001"
   batchSize:          number   // max events per commit batch
   countyId:           string   // "raleigh_nc"
-  contractAddress:    string   // TogiboxOracle.sol on GIWA
+  contractAddress:    string   // TojiboxOracle.sol on GIWA
   giwaRpc:            string   // "https://sepolia-rpc.giwa.io/"
   giwaChainId:        number   // 91342 (GIWA Sepolia testnet)
   consensusThreshold: number   // 0.67 = 2/3 of nodes must agree
@@ -75,7 +75,7 @@ type NodeResult = {
 /**
  * Build a binary Merkle tree from bytes32 hex leaf values.
  * Internal nodes: keccak256(sorted(left, right)).
- * Matches the _verifyProof logic in TogiboxOracle.sol.
+ * Matches the _verifyProof logic in TojiboxOracle.sol.
  */
 function buildMerkleRoot(leaves: string[]): string {
   if (leaves.length === 0) throw new Error("No leaves")
@@ -150,7 +150,7 @@ const computeMerkleRoot = (nodeRuntime: NodeRuntime<Config>): NodeResult => {
  * data source, median == exact root when nodes are healthy.
  */
 const onCronTrigger = (runtime: Runtime<Config>): void => {
-  runtime.log("TogiboxOracle workflow triggered — computing batch Merkle root")
+  runtime.log("TojiboxOracle workflow triggered — computing batch Merkle root")
 
   // ── Step 1: Distributed computation + BFT consensus ───────────────────────
 
@@ -172,8 +172,8 @@ const onCronTrigger = (runtime: Runtime<Config>): void => {
   // ── Step 2: Submit to GIWA via oracle bridge ──────────────────────────────
   //
   // See the header comment: /api/oracle/commit-root is not implemented by any
-  // sibling repo yet. togibox-api would need to add it (hold the GIWA signer,
-  // validate the root against pending events, call TogiboxOracle.commitBatch())
+  // sibling repo yet. tojibox-api would need to add it (hold the GIWA signer,
+  // validate the root against pending events, call TojiboxOracle.commitBatch())
   // for this path to run end-to-end. Until then, use pipeline/processor.mjs.
 
   const httpClient = new HTTPClient()

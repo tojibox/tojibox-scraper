@@ -188,7 +188,7 @@ def extract_pins_from_links(links: list) -> list:
 # ── HTTP helpers ───────────────────────────────────────────────────────────────
 
 def _fetch_page(url: str, retries: int = 3) -> str:
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; TogiboxOracle/1.0)"}
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; TojiboxOracle/1.0)"}
     for attempt in range(retries):
         try:
             r = requests.get(url, headers=headers, timeout=30)

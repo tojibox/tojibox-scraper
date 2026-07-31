@@ -15,7 +15,7 @@ CREATE TABLE parcel_history (
   event_id          UUID        NOT NULL REFERENCES change_events (id),
 
   -- which on-chain snapshot this is included in
-  snapshot_index    BIGINT,                       -- TogiboxOracle.sol snapshots[] index
+  snapshot_index    BIGINT,                       -- TojiboxOracle.sol snapshots[] index
   batch_id          UUID,
 
   -- Merkle proof for this leaf at this snapshot

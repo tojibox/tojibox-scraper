@@ -1,5 +1,5 @@
 """
-Togibox Scraper API
+Tojibox Scraper API
 --------------------
 Thin FastAPI wrapper exposing:
   - GET  /health              — liveness check
@@ -57,7 +57,7 @@ def configure_logging():
 configure_logging()
 
 app = FastAPI(
-    title="Togibox Scraper API",
+    title="Tojibox Scraper API",
     description="Wake County parcel / rezoning petition scraper — manual trigger + health check",
     version="1.0.0",
 )
@@ -82,7 +82,7 @@ def _run_all():
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "togibox-scraper"}
+    return {"status": "ok", "service": "tojibox-scraper"}
 
 
 @app.post("/run/parcel", response_model=RunResponse)
@@ -118,5 +118,5 @@ async def trigger_all(background_tasks: BackgroundTasks):
 if __name__ == "__main__":
     import uvicorn
 
-    logger.info("Togibox Scraper API starting up")
+    logger.info("Tojibox Scraper API starting up")
     uvicorn.run("main:app", host="0.0.0.0", port=API_PORT, reload=True)

@@ -1,7 +1,7 @@
 {
-  "name": "togibox-oracle-contracts",
+  "name": "tojibox-oracle-contracts",
   "version": "1.0.0",
-  "description": "TogiboxOracle smart contract — GIWA (OP-Stack EVM L2)",
+  "description": "TojiboxOracle smart contract — GIWA (OP-Stack EVM L2)",
   "scripts": {
     "compile": "hardhat compile",
     "deploy:testnet": "hardhat run scripts/deploy.js --network giwaSepolia",

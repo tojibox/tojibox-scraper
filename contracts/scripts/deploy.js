@@ -1,5 +1,5 @@
 /**
- * Deploy TogiboxOracle to GIWA Sepolia.
+ * Deploy TojiboxOracle to GIWA Sepolia.
  *
  * Usage:
  *   npx hardhat run scripts/deploy.js --network giwaSepolia
@@ -9,7 +9,7 @@
  *   ORACLE_ADDRESS       — EOA that the pipeline/CRE workflow will use to call commitBatch()
  *                          (can be same as deployer for testnet)
  *
- * After deploy, copy CONTRACT_ADDRESS into ../.env as TOGIBOX_ORACLE_ADDRESS
+ * After deploy, copy CONTRACT_ADDRESS into ../.env as TOJIBOX_ORACLE_ADDRESS
  */
 
 const hre = require("hardhat");
@@ -17,7 +17,7 @@ const hre = require("hardhat");
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
 
-  console.log("Deploying TogiboxOracle...");
+  console.log("Deploying TojiboxOracle...");
   console.log("  Network  :", hre.network.name);
   console.log("  Deployer :", deployer.address);
 
@@ -30,18 +30,18 @@ async function main() {
   const oracleAddress = process.env.ORACLE_ADDRESS || deployer.address;
   console.log("  Oracle   :", oracleAddress);
 
-  const TogiboxOracle = await hre.ethers.getContractFactory("TogiboxOracle");
+  const TojiboxOracle = await hre.ethers.getContractFactory("TojiboxOracle");
 
-  const contract = await TogiboxOracle.deploy(oracleAddress);
+  const contract = await TojiboxOracle.deploy(oracleAddress);
   await contract.waitForDeployment();
 
   const address = await contract.getAddress();
 
-  console.log("\n✅ TogiboxOracle deployed!");
+  console.log("\n✅ TojiboxOracle deployed!");
   console.log("  Contract address :", address);
   console.log("  Oracle address   :", oracleAddress);
   console.log("\nAdd to ../.env:");
-  console.log(`  TOGIBOX_ORACLE_ADDRESS=${address}`);
+  console.log(`  TOJIBOX_ORACLE_ADDRESS=${address}`);
   console.log(`  GIWA_NETWORK=${hre.network.name}`);
 }
 
