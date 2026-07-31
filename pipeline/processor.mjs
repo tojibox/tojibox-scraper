@@ -31,7 +31,12 @@ dotenv.config({ path: join(__dirname, '../.env') });
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 
-const API_BASE      = `http://localhost:${process.env.API_PORT || 8001}`;
+// Defaults to localhost for local dev, where the API and pipeline run on the
+// same machine. In production these are separate deployed services (e.g. two
+// different Railway services), so ORACLE_API_URL must be set to the deployed
+// tojibox-api's public URL — "localhost" inside the pipeline's own container
+// would otherwise point at itself, not at the API.
+const API_BASE       = process.env.ORACLE_API_URL || `http://localhost:${process.env.API_PORT || 8001}`;
 const CONTRACT_ADDR = process.env.TOJIBOX_ORACLE_ADDRESS;
 const PRIV_KEY      = process.env.GIWA_PRIVATE_KEY;
 const RPC_URL       = process.env.GIWA_RPC_URL || 'https://sepolia-rpc.giwa.io/';
