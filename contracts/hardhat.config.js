@@ -1,5 +1,9 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("dotenv").config();
+// Bare dotenv.config() resolves .env against process.cwd(), which breaks
+// when this is invoked from within contracts/ (as `npx hardhat run
+// scripts/deploy.js` normally is) — the real .env lives one level up, at
+// the repo root, alongside scrapers/pipeline/migrations.
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 
 const GIWA_PRIVATE_KEY = process.env.GIWA_PRIVATE_KEY || "";
 
