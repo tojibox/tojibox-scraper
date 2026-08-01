@@ -49,11 +49,12 @@ const MAX_PINS_PER_BATCH = 50;
 // Events per batch — controls calldata size and DB update cost.
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '100');
 
+// contracts/artifacts/ is Hardhat's generated build output (gitignored) and
+// isn't guaranteed to exist outside a machine that's run `hardhat compile` —
+// including Railway's clone of this repo. The ABI alone is committed here so
+// this script is self-contained in production.
 const artifact = JSON.parse(
-  readFileSync(
-    join(__dirname, '../contracts/artifacts/src/TojiboxOracle.sol/TojiboxOracle.json'),
-    'utf8'
-  )
+  readFileSync(join(__dirname, 'TojiboxOracleAbi.json'), 'utf8')
 );
 const ABI = artifact.abi;
 
