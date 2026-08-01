@@ -1,0 +1,14 @@
+.venv
+__pycache__
+*.pyc
+.git
+.env
+.env.local
+node_modules
+contracts/node_modules
+contracts/artifacts
+contracts/cache
+pipeline/node_modules
+data
+logs
+*.log

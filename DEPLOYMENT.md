@@ -14,7 +14,11 @@ continuously in-process. No HTTP surface, so no domain/networking needed.
 1. **New Service** → **Deploy from GitHub repo** → `tojibox/tojibox-scraper`.
 2. **Settings**:
    - Root Directory: `/` (repo root — leave default)
-   - Start Command (override): `python -m scrapers.scheduler`
+   - A `Dockerfile` at the repo root handles the build and defaults to
+     `python -m scrapers.scheduler` as its `CMD`, so no Start Command
+     override is needed. (The Dockerfile also installs `libpq5` at build
+     time — Railway's auto-detected Python builder doesn't include it,
+     which `psycopg2-binary` needs at runtime.)
    - Networking: none needed — turn off/skip domain generation.
 3. **Variables**:
 
@@ -60,7 +64,7 @@ to function (the scheduler already runs scrapes automatically) — only add
 this if you want that manual control surface exposed over HTTP.
 
 - Root Directory: `/`
-- Start Command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Start Command (override the Dockerfile's default): `uvicorn main:app --host 0.0.0.0 --port $PORT`
 - Same DB/ArcGIS variables as Service 1.
 
 ## Not deployed here
